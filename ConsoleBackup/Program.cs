@@ -1,7 +1,7 @@
-﻿using MySql.Data.MySqlClient;
-using System;
-using System.Configuration;
+﻿using System;
 using System.IO;
+using System.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace ConsoleBackup
 {
@@ -13,9 +13,8 @@ namespace ConsoleBackup
             string filePath = Path.Combine(outputDirectory, $"{DateTime.Now:yyyyMMdd_HHmmss}.sql");
             Directory.CreateDirectory(outputDirectory);
 
-            using (MySqlConnection conn = new MySqlConnection(ConfigurationManager.AppSettings["ConnectionString"]))
+            using (MySqlConnection conn = new MySqlConnection(Encoding.Decrypt(ConfigurationManager.AppSettings["ConnectionString"])))
             {
-                conn.Close();
                 using (MySqlCommand cmd = new MySqlCommand())
                 {
                     using (MySqlBackup mb = new MySqlBackup(cmd))
@@ -27,6 +26,12 @@ namespace ConsoleBackup
                     }
                 }
             }
+        }
+
+        static void EncriptConnectionString()
+        {
+            //Salvar o retorno no arquivo app.config
+            string connectionStringEncript = Encoding.Encrypt("server=localhost;userid=root;password=root;database=autoescolalider");
         }
     }
 }
