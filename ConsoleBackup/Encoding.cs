@@ -6,45 +6,41 @@ namespace ConsoleBackup
 {
     public class Encoding
     {
-        private const string key = "key";
         public static string Encrypt(string text)
         {
-            byte[] Results;
-            using (MD5CryptoServiceProvider HashProvider = new MD5CryptoServiceProvider())
-            {
-                using (TripleDESCryptoServiceProvider TDESAlgorithm = new TripleDESCryptoServiceProvider()
-                {
-                    Key = HashProvider.ComputeHash(new UTF8Encoding().GetBytes(key)),
-                    Mode = CipherMode.ECB,
-                    Padding = PaddingMode.PKCS7
-                })
-                {
-                    ICryptoTransform Encryptor = TDESAlgorithm.CreateEncryptor();
-                    byte[] DataToEncrypt = new UTF8Encoding().GetBytes(text);
-                    Results = Encryptor.TransformFinalBlock(DataToEncrypt, 0, DataToEncrypt.Length);
-                }
-            }
-            return Convert.ToBase64String(Results);
+            return Convert.ToBase64String(TransformFinalBlock(Transform(TypeEncoding.Encrypt), new UTF8Encoding().GetBytes(text)));
         }
 
         public static string Decrypt(string textCript)
         {
-            byte[] Results;
+            return new UTF8Encoding().GetString(TransformFinalBlock(Transform(TypeEncoding.Decrypt), Convert.FromBase64String(textCript)));
+        }
+
+        private static byte[] TransformFinalBlock(ICryptoTransform cryptoTransform, byte[] data)
+        {
+            return cryptoTransform.TransformFinalBlock(data, 0, data.Length);
+        }
+
+        private static ICryptoTransform Transform(TypeEncoding typeEncoding)
+        {
             using (MD5CryptoServiceProvider HashProvider = new MD5CryptoServiceProvider())
             {
                 using (TripleDESCryptoServiceProvider TDESAlgorithm = new TripleDESCryptoServiceProvider()
                 {
-                    Key = HashProvider.ComputeHash(new UTF8Encoding().GetBytes(key)),
+                    Key = HashProvider.ComputeHash(new UTF8Encoding().GetBytes("key")),
                     Mode = CipherMode.ECB,
                     Padding = PaddingMode.PKCS7
                 })
                 {
-                    ICryptoTransform Decryptor = TDESAlgorithm.CreateDecryptor();
-                    byte[] DataToDecrypt = Convert.FromBase64String(textCript);
-                    Results = Decryptor.TransformFinalBlock(DataToDecrypt, 0, DataToDecrypt.Length);
+                    return typeEncoding == TypeEncoding.Encrypt ? TDESAlgorithm.CreateEncryptor() : TDESAlgorithm.CreateDecryptor();
                 }
             }
-            return new UTF8Encoding().GetString(Results);
+        }
+
+        enum TypeEncoding
+        {
+            Encrypt,
+            Decrypt
         }
     }
 }
