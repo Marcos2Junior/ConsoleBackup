@@ -31,7 +31,7 @@ namespace ConsoleBackup
         static void EncriptConnectionString()
         {
             //Salvar o retorno no arquivo app.config
-            string connectionStringEncript = Encoding.Encrypt("server=localhost;userid=root;password=root;database=autoescolalider");
+            string connectionStringEncript = Encoding.Encrypt("connection string");
         }
     }
 }
